@@ -524,8 +524,47 @@ lasso$bestTune
 ```
 
 ### 3.1.2. Beyond the syllabus
+#### 3.1.2.1. Shapley Value Regression
+Shapley Value Regression is a technique used to determine the relative importance of predictor variables in linear regression. It derives from game theory and its purpose is to evaluate the worth of each player’s input over all possible combinations of players. In the study, it aims to identify main variables predicting data scientists' salaries and to avoid the problem of high correlation between variables.
 
-#### 3.1.2.1. Proposed model
+```{r}
+set.seed(1234)
+ind <- runif(nrow(D_num)) < 0.7
+
+train_data <- D_num[ind , ] 
+test_data <- D_num[!ind , ]
+
+cat("Dimensions of the training set are", dim(train_data), "\n")
+cat("Dimensions of the test set are", dim(test_data), "\n")
+
+comp = as.numeric(train_data$comp)
+desc = as.numeric(train_data$desc)
+age = as.numeric(train_data$Age)
+avg_S = as.numeric(train_data$avg_S)
+upp_S = as.numeric(train_data$upp_S)
+low_S = as.numeric(train_data$low_S)
+rating = as.numeric(train_data$Rating)
+founded = as.numeric(train_data$Founded)
+
+lmsalary = lm(avg_S ~ comp + desc + age + upp_S + low_S + rating + founded)
+summary(lmsalary)
+```
+```{r}
+library(relaimpo)
+calc.relimp(lmsalary, type=list('lmg'), rela=T)
+```
+```{r}
+library(ggplot2)
+plot(lm(avg_S ~ comp + desc + age + upp_S + low_S + rating + founded))
+
+#relative importance metrics
+names <- c("comp", "desc", "age", "upp_S", "low_S", "rating",
+           "founded")
+count = c(0.0007412625, 0.0012289751, 0.0013441346, 0.5085275512, 0.4867050808, 0.0006903397, 0.0007626562)
+
+barplot(count,names.arg=names,xlab="Explanatory Variables",ylab="Relative Importance of Variables",cex.names=0.9)
+```
+From the results, Upper Salary and Lower Salary are the two most important predictor variables. Upper Salary and Lower Salary account for approximately 50.9% and 48.7% of the Average Salary respectively. This is certainly true because the upper and lower salary directly affects average salary. In contrast, other variables such as comp_count, founded, age, description and rating have almost no impact on the average salary, accounting for only 0.4% of it.
 
 #### 3.1.2.2. Theory behind the model
 
